@@ -71,12 +71,51 @@ class SoldierAI(object):
 
     def sense_threats(self):
         """
-        Mock perception system. 
-        In real mod, would iterate BigWorld.entities.values() to find vehicles.
+        Scans BigWorld entities to find threats (Vehicles).
         """
-        # TODO: Implement real entity checking
-        # For now, return None unless manually triggered
-        return None
+        # Debug: Log what we see occasionally (not every tick to avoid spam)
+        # We use a simple counter or timer in real app, but for now we'll just check if we have a target
+        
+        threat = None
+        min_dist = self.vision_radius
+        
+        # Iterate over all entities in the game client
+        for eid, entity in BigWorld.entities.items():
+            if eid == self.entity_id:
+                continue
+
+            # Calculate distance
+            try:
+                # Entities usually have .position (Math.Vector3)
+                dist = (entity.position - self.position).length
+            except Exception:
+                continue
+                
+            if dist > self.vision_radius:
+                continue
+
+            # Identify Entity Type
+            # We look for 'Vehicle' in the class name or type
+            class_name = entity.__class__.__name__
+            
+            # LOGGING FOR DEBUGGING
+            # Print everything close by so we know what 'Tanks' are called
+            # print(f"[SoldierAI-{self.entity_id}] Saw {class_name} (ID: {eid}) at {dist:.1f}m")
+
+            if 'Vehicle' in class_name or 'Avatar' in class_name:
+                # It's a tank!
+                if dist < min_dist:
+                    min_dist = dist
+                    threat = {
+                        'type': ThreatType.TANK,
+                        'entity': entity,
+                        'dist': dist,
+                        'is_heavy': 'heavy' in class_name.lower(), # Guessing
+                        'close_proximity': dist < self.danger_radius
+                    }
+                    print(f"[SoldierAI-{self.entity_id}] THREAT DETECTED: {class_name} at {dist:.1f}m")
+
+        return threat
 
     def handle_state_logic(self, threat):
         current_time = time.time()
