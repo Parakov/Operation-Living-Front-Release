@@ -1,0 +1,11 @@
+{
+    "interactionLevel": "interactive",
+    "soldierDensity": "medium",
+    "maxSoldiers": 50,
+    "enableExplosions": true,
+    "explosionFrequency": 0.5,
+    "debugMode": false,
+    "keybindings": {
+        "toggleRP": "KEY_F9"
+    }
+}
